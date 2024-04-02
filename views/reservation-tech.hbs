@@ -1,0 +1,43 @@
+{{> navigation-tech}}
+<div class="d-flex justify-content-center">
+    <div class="w-75">
+        {{#if isAdd}}
+        <form action="../add-reservation" method="get">
+        {{else}}
+        <form action="../edit-reservation" method="get">
+        {{/if}}
+            <div class="input-group bg-light border border-success shadow border-3 rounded-4 p-3 m-3">
+                <input type="text" class="form-control" placeholder="Enter name" value="{{search}}" name="search"/>
+                <button type="submit" class="btn btn-outline-success">Search</button>
+                </input>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="d-flex flex-wrap justify-content-center text-center">
+    {{#if isAdd}}
+    {{#each user}}
+    <div class="bg-secondary m-2 pb-5 rounded-4 bg-opacity-50">
+        <a href="./add-reservation/{{name}}">
+            <img src="{{profile}}" id="profile" class="border border-success border-3 rounded-circle m-5 bg-light">
+        </a>
+        <div class="bg-light border border-success shadow border-3 rounded-4 p-3 mx-3 fw-bold">
+            {{fullname}}
+        </div>
+    </div>
+    {{/each}}
+    {{else}}
+    {{#each user}}
+    <div class="bg-secondary m-2 pb-5 rounded-4 bg-opacity-50">
+        <a href="./edit-reservation/{{name}}">
+            <img src="{{profile}}" id="profile" class="border border-success border-3 rounded-circle m-5 bg-light">
+        </a>
+        <div class="bg-light border border-success shadow border-3 rounded-4 p-3 mx-3 fw-bold">
+            {{fullname}}
+        </div>
+    </div>
+    {{/each}}
+    {{/if}}
+</div>
+{{> footer}}
+{{> logout}}

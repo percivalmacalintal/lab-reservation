@@ -1,0 +1,39 @@
+{{#if error}}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>Not a DLSU account!</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{/if}}
+{{#if registered}}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <strong>Account already exists!</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{/if}}
+<form name="register" action="../register-validation" method="post">
+    <div class="input-group mb-3">
+        <div class="form-floating">
+            <input type="text" class="form-control border-success" placeholder="Enter name" id="email" name="email"
+                required />
+            <label for="email">Email</label>
+        </div>
+        <span class="input-group-text border-success">@dlsu.edu.ph</span>
+    </div>
+    <div class="form-floating mb-3">
+        <input type="password" class="form-control border-success" placeholder="Enter password" id="password"
+            name="password" required />
+        <label for="password" class="form-label">Password</label>
+    </div>
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control border-success" id="url" name="url" />
+        <label for="url">Profile URL</label>
+    </div>
+    <div class="form-floating mb-3">
+        <textarea class="form-control border-success" id="description" name="description"></textarea>
+        <label for="description">Description</label>
+    </div>
+    <div class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-success">Register</button>
+    </div>
+</form>
+<a class="d-flex justify-content-center link-secondary mt-3" href="../login">Already have an account?</a>

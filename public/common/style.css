@@ -1,0 +1,133 @@
+@import url("https://fonts.googleapis.com/css?family=Oswald|Noto+Sans");
+
+body {
+    font-family: "Noto Sans", sans-serif;
+    font-size: 16px;
+    background-image: url("https://www.dlsu.edu.ph/wp-content/uploads/2017/12/1DLSU-at-duskE.jpg");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+h1 {
+    font-family: Oswald, sans-serif;
+    font-size: 46px;
+}
+
+p {
+    text-align: justify;
+}
+
+.dropdown-item:active {
+    background-color: white;
+    color: black;
+}
+
+.search>img {
+    width: 25px;
+}
+
+#title {
+    color: seagreen;
+}
+
+#main {
+    width: 70%;
+}
+
+#sidebar {
+    width: 30%;
+}
+
+#file {
+    display: none;
+}
+
+input[type="checkbox"]:checked {
+    background-color: seagreen;
+}
+
+svg {
+    width: 200px;
+}
+
+.slot,
+.reserved_slot,
+.full_slot {
+    border-radius: 20px;
+    border: 10px double White;
+    color: White;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.slot,
+.full_slot {
+    width: 15%;
+}
+
+.slot {
+    background-color: SeaGreen;
+}
+
+.reserved_slot {
+    background-color: GoldenRod;
+}
+
+.full_slot {
+    background-color: DarkRed;
+}
+
+td {
+    text-align: center;
+}
+
+.desk {
+    width: 60px;
+}
+
+.chair {
+    width: 25px;
+    transform: scaleY(-1);
+    background-color: seagreen;
+}
+
+.user_chair {
+    background-color: darkred;
+}
+
+.anon_chair {
+    background-color: lightslategrey;
+}
+
+.reserved_chair {
+    background-color: GoldenRod;
+}
+
+.anon_checkbox {
+    margin-right: 5px;
+}
+
+#logos>a>img {
+    width: 50px;
+}
+
+#profile {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
+
+#profile-res {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+}
+
+#urledit {
+    display: none;
+}
+
+#invisibleInput {
+    pointer-events: none;
+}

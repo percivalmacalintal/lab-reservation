@@ -1,0 +1,81 @@
+{{> navigation}}
+<div class="d-flex justify-content-center">
+    <div class="w-75 bg-light shadow border border-success border-3 rounded-4 p-3 m-3">
+        <div class="d-flex justify-content-center mb-3">
+            <img src="{{user.profile}}" id="profile" class="border border-success border-3 rounded-circle">
+        </div>
+        <div class="d-flex justify-content-center mb-3">
+            <h1>{{user.fullname}}</h1>
+        </div>
+        <form action="../edit-profile" method="post">
+            {{#if edit}}
+            <div class="form-floating mb-3" id="urledit">
+                <input type="text" class="form-control border-success" name="url" id="url" value="21"/>
+                <label for="url">Profile URL</label>
+            </div>
+            {{/if}}
+            <div class="mb-3">
+                <label for="desc" class="form-label">
+                    <h5>Description:</h5>
+                </label>
+                <textarea class="form-control" id="desc" name="desc" disabled>{{user.description}}</textarea>
+            </div>
+            {{#if edit}}
+            <div class="d-flex justify-content-center mb-3">
+                <button type="button" class="btn btn-success" id="edit_profile" onclick="editProfile('{{user.profile}}')">Edit</button><br />
+                <button type="submit" class="btn btn-success" id="save_profile" style="display: none;">Save</button>
+            </div>
+            {{/if}}
+        </form>
+        {{#if reservation}}
+        <h5 class="mb-3">Current Reservations:</h5>
+        <table class="table table-striped table-bordered text-center border-dark">
+            <tr>
+                <th>Room Code</th>
+                <th>Scheduled Date</th>
+                <th>Time Slot</th>
+                <th>Seats Reserved</th>
+                <th>Date Requested</th>
+                <th>Time Requested</th>
+            </tr>
+            {{#each reservation}}
+            <tr>
+                <td>{{lab}}</td>
+                <td>{{date}}</td>
+                <td>{{time}}</td>
+                <td>{{seats}}</td>
+                <td>{{date_requested}}</td>
+                <td>{{time_requested}}</td>
+            </tr>
+            {{/each}}
+        </table>
+        {{/if}}
+        {{#if edit}}
+        <div class="d-flex justify-content-center">
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete">
+                Delete User Account
+            </button>
+        </div>
+        <div class="modal fade" id="delete" data-bs-backdrop="static" data-bs-keyboard="true" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5">Delete User Account</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        This will delete your user account and cancel any pending
+                        reservations. Confirm?
+                    </div>
+                    <div class="modal-footer">
+                        <form action="../delete-account" method="post">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/if}}
+    </div>
+</div>
+{{> logout}}
