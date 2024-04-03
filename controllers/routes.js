@@ -1119,6 +1119,7 @@ function add(server) {
         let seats = req.query.seats;
         let anon = req.query.anon;
         let name = convertToUsername(req.query.name);
+        let mode;
 
         console.log(name);
         console.log(req.session.account_name);
@@ -1139,6 +1140,7 @@ function add(server) {
                 dateParts[1]
             );
             datetime.setHours(numTime[0], numTime[1], 0, 0);
+            mode = "add";
         } else {
             const numDate = new Date(date);
             const month = numDate.getMonth(); // Adding 1 because months are zero-indexed
@@ -1152,6 +1154,7 @@ function add(server) {
             }
             datetime.setFullYear(year, month, day);
             datetime.setHours(numTime[0], numTime[1], 0, 0);
+            mode = "edit"
         }
 
         console.log(datetime);
@@ -1184,7 +1187,11 @@ function add(server) {
                 reservation.seats = seatsArray;
                 reservation.isAnonymous = isAnonymous;
                 reservation.save().then(function () {
-                    resp.redirect("./add-reservation/" + name);
+                    if (mode == "add") {
+                        resp.redirect("./add-reservation/" + name);
+                    } else {
+                        resp.redirect("./edit-reservation/" + name);
+                    }
                 });
             } else {
                 const reservationInstance = reservationModel({
@@ -1196,7 +1203,11 @@ function add(server) {
                     isAnonymous: isAnonymous,
                 });
                 reservationInstance.save().then(function () {
-                    resp.redirect("./add-reservation/" + name);
+                    if (mode == "add") {
+                        resp.redirect("./add-reservation/" + name);
+                    } else {
+                        resp.redirect(".edit-reservation/" + name);
+                    }
                 });
             }
         });
