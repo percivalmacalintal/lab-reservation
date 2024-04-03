@@ -1202,10 +1202,6 @@ function add(server) {
         });
     });
 
-    server.post("/edit-reservation", function (req, resp) {
-        resp.redirect("/reservation");
-    });
-
     server.get("/delete-reservation", function (req, resp) {
         let lab = req.query.lab;
         let date = req.query.date;
