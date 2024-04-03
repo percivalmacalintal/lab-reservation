@@ -90,14 +90,25 @@ function add(server) {
                 }
             }
         }
+        user.sort((a, b) => {
+            const aName = a.fullname.split(' ');
+            const bName = b.fullname.split(' ');
+            if (aName[1] === bName[1]) {
+                return (aName[0] > bName[0]) ? 1 : -1;
+            } else {
+                return (aName[1] > bName[1]) ? 1 : -1;
+            }
+        })
         return user;
     }
 
     server.get("/", function (req, resp) {
         let now = new Date();
-        reservationModel.deleteMany({ datetime: { $lt: now } }).then(function (reservation) {
-            console.log(`${reservation.deletedCount} documents deleted`);
-        });
+        reservationModel
+            .deleteMany({ datetime: { $lt: now } })
+            .then(function (reservation) {
+                console.log(`${reservation.deletedCount} documents deleted`);
+            });
 
         if (req.session.account_id == undefined) {
             resp.redirect("/login");
@@ -169,29 +180,29 @@ function add(server) {
     server.post("/register-validation", function (req, resp) {
         const emailFormat = /^[a-zA-Z]+[._][a-zA-Z]+$/;
         if (emailFormat.test(req.body.email)) {
-            accountModel.findOne({ name: req.body.email })
-                .then(function (account) {
-                    if (account) {
-                        resp.redirect("/register?account=registered");
-                    } else {
-                        const isTech = req.body.email.match(/\./g) ? true : false;
-                        bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
-                            if (req.body.url == "") {
-                                req.body.url = "https://upload.wikimedia.org/wikipedia/en/c/c2/De_La_Salle_University_Seal.svg";
-                            }
-                            const accountInstance = accountModel({
-                                name: req.body.email,
-                                pass: hash,
-                                description: req.body.description,
-                                profile: req.body.url,
-                                isTech: isTech,
-                            });
-                            accountInstance.save();
-                            resp.redirect("/login");
-                            return;
+            accountModel.findOne({ name: req.body.email }).then(function (account) {
+                if (account) {
+                    resp.redirect("/register?account=registered");
+                } else {
+                    const isTech = req.body.email.match(/\./g) ? true : false;
+                    bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
+                        if (req.body.url == "") {
+                            req.body.url =
+                                "https://upload.wikimedia.org/wikipedia/en/c/c2/De_La_Salle_University_Seal.svg";
+                        }
+                        const accountInstance = accountModel({
+                            name: req.body.email,
+                            pass: hash,
+                            description: req.body.description,
+                            profile: req.body.url,
+                            isTech: isTech,
                         });
-                    }
-                });
+                        accountInstance.save();
+                        resp.redirect("/login");
+                        return;
+                    });
+                }
+            });
         } else {
             resp.redirect("/register?account=failed");
         }
@@ -365,10 +376,11 @@ function add(server) {
         }
         let reservedSlots = new Array();
         let now = new Date();
-        let userReservations = await reservationModel.find({
-            name: currentUser.name,
-            datetime: { $gte: now },
-        });
+        let userReservations = await reservationModel
+            .find({
+                name: currentUser.name
+            })
+            .sort({ datetime: 1 });
         for (const item of userReservations) {
             let datetime = new Date(item.datetime);
             let datetime_requested = new Date(item.datetime_requested);
@@ -456,7 +468,7 @@ function add(server) {
         end.setHours(21, 0, 0, 0);
 
         let name = {
-            name: req.session.account_name
+            name: req.session.account_name,
         };
         async function showLabs() {
             const room = await labModel.findOne();
@@ -487,7 +499,11 @@ function add(server) {
             if (slots.length == 0) {
                 isReserved = true;
             }
-            resp.json({ slots: slots, isReserved: isReserved, name: req.body.name.name });
+            resp.json({
+                slots: slots,
+                isReserved: isReserved,
+                name: req.body.name.name,
+            });
         }
         getLabs();
     });
@@ -504,7 +520,11 @@ function add(server) {
             if (slots.length == 0) {
                 isReserved = true;
             }
-            resp.json({ slots: slots, isReserved: isReserved, name: req.body.name.name });
+            resp.json({
+                slots: slots,
+                isReserved: isReserved,
+                name: req.body.name.name,
+            });
         }
         getLabs();
     });
@@ -547,7 +567,9 @@ function add(server) {
             return;
         }
         if (req.query.search) {
-            findUsers(req.query.search, req.session.account_name).then(function (user) {
+            findUsers(req.query.search, req.session.account_name).then(function (
+                user
+            ) {
                 resp.render("search", {
                     layout: "index",
                     title: "Search",
@@ -568,6 +590,15 @@ function add(server) {
                         });
                     }
                 }
+                user.sort((a, b) => {
+                    const aName = a.fullname.split(' ');
+                    const bName = b.fullname.split(' ');
+                    if (aName[1] === bName[1]) {
+                        return (aName[0] > bName[0]) ? 1 : -1;
+                    } else {
+                        return (aName[1] > bName[1]) ? 1 : -1;
+                    }
+                })
                 resp.render("search", {
                     layout: "index",
                     title: "Search",
@@ -591,6 +622,7 @@ function add(server) {
             .then(function (account) {
                 reservationModel
                     .find({ name: req.session.account_name })
+                    .sort({ datetime: 1 })
                     .then(function (reservation) {
                         const user = {
                             fullname: convertToName(account.name),
@@ -731,25 +763,36 @@ function add(server) {
     });
 
     server.post("/edit-profile", function (req, resp) {
-        accountModel.findOne({ name: req.session.account_name }).then(function (account) {
-            if (req.body.url || req.body.url.trim() !== '') {
-                account.profile = req.body.url;
-            }
-            account.description = req.body.desc;
-            account.save().then(function (result) {
-                resp.redirect("/profile");
+        accountModel
+            .findOne({ name: req.session.account_name })
+            .then(function (account) {
+                if (req.body.url || req.body.url.trim() !== "") {
+                    account.profile = req.body.url;
+                }
+                account.description = req.body.desc;
+                account.save().then(function (result) {
+                    resp.redirect("/profile");
+                });
             });
-        });
     });
 
     server.post("/delete-account", function (req, resp) {
-        reservationModel.deleteMany({ name: req.session.account_name }).then(function (reservation) {
-            console.log(`${reservation.deletedCount} documents deleted`);
-            accountModel.findOneAndDelete({ name: req.session.account_name }).then(function (account) {
-                console.log(`${convertToName(account.name)}'s account has been deleted`);
-                resp.redirect("/login");
+        reservationModel
+            .deleteMany({ name: req.session.account_name })
+            .then(function (reservation) {
+                console.log(`${reservation.deletedCount} documents deleted`);
+                accountModel
+                    .findOneAndDelete({ name: req.session.account_name })
+                    .then(function (account) {
+                        console.log(
+                            `${convertToName(account.name)}'s account has been deleted`
+                        );
+                        req.session.destroy(function (err) {
+                            resp.redirect("/login");
+                            return;
+                        });
+                    });
             });
-        });
     });
 
     server.get("/add-reservation", function (req, resp) {
@@ -762,7 +805,9 @@ function add(server) {
             return;
         }
         if (req.query.search) {
-            findUsers(req.query.search, req.session.account_name).then(function (user) {
+            findUsers(req.query.search, req.session.account_name).then(function (
+                user
+            ) {
                 resp.render("reservation-tech", {
                     layout: "index",
                     title: "Add Reservation",
@@ -772,8 +817,7 @@ function add(server) {
                     search: req.query.search,
                 });
             });
-        }
-        else {
+        } else {
             accountModel.find().then(function (account) {
                 let user = new Array();
                 for (const item of account) {
@@ -786,6 +830,15 @@ function add(server) {
                         });
                     }
                 }
+                user.sort((a, b) => {
+                    const aName = a.fullname.split(' ');
+                    const bName = b.fullname.split(' ');
+                    if (aName[1] === bName[1]) {
+                        return (aName[0] > bName[0]) ? 1 : -1;
+                    } else {
+                        return (aName[1] > bName[1]) ? 1 : -1;
+                    }
+                })
                 resp.render("reservation-tech", {
                     layout: "index",
                     title: "Add Reservation",
@@ -863,7 +916,9 @@ function add(server) {
             return;
         }
         if (req.query.search) {
-            findUsers(req.query.search, req.session.account_name).then(function (user) {
+            findUsers(req.query.search, req.session.account_name).then(function (
+                user
+            ) {
                 resp.render("reservation-tech", {
                     layout: "index",
                     title: "Edit Reservation",
@@ -885,6 +940,15 @@ function add(server) {
                         });
                     }
                 }
+                user.sort((a, b) => {
+                    const aName = a.fullname.split(' ');
+                    const bName = b.fullname.split(' ');
+                    if (aName[1] === bName[1]) {
+                        return (aName[0] > bName[0]) ? 1 : -1;
+                    } else {
+                        return (aName[1] > bName[1]) ? 1 : -1;
+                    }
+                })
                 resp.render("reservation-tech", {
                     layout: "index",
                     title: "Edit Reservation",
@@ -923,11 +987,11 @@ function add(server) {
         showLabs();
     });
 
-    server.post("/create-faq", function (req, resp) {
+    server.post("/add-faq", function (req, resp) {
         faqModel
             .find()
             .lean()
-            .then(function (faqs) {
+            .then(function (faq) {
                 const faqInstance = faqModel({
                     question: req.body.question,
                     answer: req.body.answer,
@@ -962,15 +1026,41 @@ function add(server) {
         let time = req.query.time;
         let seats = req.query.seats;
         let anon = req.query.anon;
+        let user = req.session.account_name;
 
+        console.log(user);
+        console.log(date);
         console.log(lab);
 
-        const dateParts = date.split('/');
-        const timeParts = time.split(' ');
-        const specTime = timeParts[0].split(':');
         let datetime = new Date();
-        datetime.setFullYear(Number(dateParts[2]) + 2000, dateParts[0] - 1, dateParts[1]);
-        datetime.setHours(specTime[0], specTime[1], 0, 0);
+        if (date.includes("/")) {
+            const dateParts = date.split("/");
+            const timeParts = time.split(" ");
+            const specTime = timeParts[0].split(":");
+            let numTime = specTime.map(str => parseInt(str));
+            if (String(timeParts[3]) == "PM") {
+                numTime[0] += 12;
+            }
+            datetime.setFullYear(
+                Number(dateParts[2]) + 2000,
+                dateParts[0] - 1,
+                dateParts[1]
+            );
+            datetime.setHours(numTime[0], numTime[1], 0, 0);
+        } else {
+            const numDate = new Date(date);
+            const month = numDate.getMonth();
+            const day = numDate.getDate();
+            const year = numDate.getFullYear();
+            const timeParts = time.split(" ");
+            const specTime = timeParts[0].split(":");
+            let numTime = specTime.map(str => parseInt(str));
+            if (String(timeParts[1]) == "PM") {
+                numTime[0] += 12;
+            }
+            datetime.setFullYear(year, month, day);
+            datetime.setHours(numTime[0], numTime[1], 0, 0);
+        }
 
         console.log(datetime);
 
@@ -981,7 +1071,9 @@ function add(server) {
 
         console.log(req.session.account_name);
 
-        const seatsArray = seats.split(',').map(seat => parseInt(seat.trim().replace(/\D/g, ''), 10));
+        const seatsArray = seats
+            .split(",")
+            .map((seat) => parseInt(seat.trim().replace(/\D/g, ""), 10));
 
         console.log(seatsArray);
 
@@ -991,16 +1083,33 @@ function add(server) {
         }
         console.log(isAnonymous);
 
-        const reservationInstance = reservationModel({
+        const searchQuery = {
             lab: lab,
             datetime: datetime,
-            datetime_requested: datetime_requested,
             name: req.session.account_name,
-            seats: seatsArray,
-            isAnonymous: isAnonymous
+        };
+        reservationModel.findOne(searchQuery).then(function (reservation) {
+            if (reservation) {
+                reservation.datetime_requested = datetime_requested;
+                reservation.seats = seatsArray;
+                reservation.isAnonymous = isAnonymous;
+                reservation.save().then(function () {
+                    resp.redirect("/reservation");
+                });
+            } else {
+                const reservationInstance = reservationModel({
+                    lab: lab,
+                    datetime: datetime,
+                    datetime_requested: datetime_requested,
+                    name: req.session.account_name,
+                    seats: seatsArray,
+                    isAnonymous: isAnonymous,
+                });
+                reservationInstance.save().then(function () {
+                    resp.redirect("/reservation");
+                });
+            }
         });
-        reservationInstance.save();
-        resp.redirect("/reservation");
     });
 
     server.get("/confirm-reservation-tech", function (req, resp) {
@@ -1015,12 +1124,35 @@ function add(server) {
         console.log(req.session.account_name);
         console.log(lab);
 
-        const dateParts = date.split('/');
-        const timeParts = time.split(' ');
-        const specTime = timeParts[0].split(':');
         let datetime = new Date();
-        datetime.setFullYear(Number(dateParts[2]) + 2000, dateParts[0] - 1, dateParts[1]);
-        datetime.setHours(specTime[0], specTime[1], 0, 0);
+        if (date.includes("/")) {
+            const dateParts = date.split("/");
+            const timeParts = time.split(" ");
+            const specTime = timeParts[0].split(":");
+            let numTime = specTime.map(str => parseInt(str));
+            if (String(timeParts[3]) == "PM") {
+                numTime[0] += 12;
+            }
+            datetime.setFullYear(
+                Number(dateParts[2]) + 2000,
+                dateParts[0] - 1,
+                dateParts[1]
+            );
+            datetime.setHours(numTime[0], numTime[1], 0, 0);
+        } else {
+            const numDate = new Date(date);
+            const month = numDate.getMonth(); // Adding 1 because months are zero-indexed
+            const day = numDate.getDate();
+            const year = numDate.getFullYear();
+            const timeParts = time.split(" ");
+            const specTime = timeParts[0].split(":");
+            let numTime = specTime.map(str => parseInt(str));
+            if (String(timeParts[1]) == "PM") {
+                numTime[0] += 12;
+            }
+            datetime.setFullYear(year, month, day);
+            datetime.setHours(numTime[0], numTime[1], 0, 0);
+        }
 
         console.log(datetime);
 
@@ -1029,7 +1161,9 @@ function add(server) {
 
         console.log(datetime_requested);
 
-        const seatsArray = seats.split(',').map(seat => parseInt(seat.trim().replace(/\D/g, ''), 10));
+        const seatsArray = seats
+            .split(",")
+            .map((seat) => parseInt(seat.trim().replace(/\D/g, ""), 10));
 
         console.log(seatsArray);
 
@@ -1039,16 +1173,33 @@ function add(server) {
         }
         console.log(isAnonymous);
 
-        const reservationInstance = reservationModel({
+        const searchQuery = {
             lab: lab,
             datetime: datetime,
-            datetime_requested: datetime_requested,
             name: name,
-            seats: seatsArray,
-            isAnonymous: isAnonymous
+        };
+        reservationModel.findOne(searchQuery).then(function (reservation) {
+            if (reservation) {
+                reservation.datetime_requested = datetime_requested;
+                reservation.seats = seatsArray;
+                reservation.isAnonymous = isAnonymous;
+                reservation.save().then(function () {
+                    resp.redirect("./add-reservation/" + name);
+                });
+            } else {
+                const reservationInstance = reservationModel({
+                    lab: lab,
+                    datetime: datetime,
+                    datetime_requested: datetime_requested,
+                    name: name,
+                    seats: seatsArray,
+                    isAnonymous: isAnonymous,
+                });
+                reservationInstance.save().then(function () {
+                    resp.redirect("./add-reservation/" + name);
+                });
+            }
         });
-        reservationInstance.save();
-        resp.redirect("./add-reservation/" + name);
     });
 
     server.post("/edit-reservation", function (req, resp) {
@@ -1064,21 +1215,28 @@ function add(server) {
         console.log(user);
         console.log(lab);
 
+        let datetime = new Date();
         const numDate = new Date(date);
         const month = numDate.getMonth(); // Adding 1 because months are zero-indexed
         const day = numDate.getDate();
         const year = numDate.getFullYear();
-        const timeParts = time.split(' ');
-        const specTime = timeParts[0].split(':');
-        let datetime = new Date();
+        const timeParts = time.split(" ");
+        const specTime = timeParts[0].split(":");
+        let numTime = specTime.map(str => parseInt(str));
+        if (String(timeParts[1]) == "PM") {
+            numTime[0] += 12;
+        }
         datetime.setFullYear(year, month, day);
-        datetime.setHours(specTime[0], specTime[1], 0, 0);
+        datetime.setHours(numTime[0], numTime[1], 0, 0);
+
 
         console.log(datetime);
 
-        reservationModel.deleteMany({ name: user, lab: lab, datetime: datetime }).then(function (reservation) {
-            console.log(`${reservation.deletedCount} documents deleted`);
-        });
+        reservationModel
+            .deleteMany({ name: user, lab: lab, datetime: datetime })
+            .then(function (reservation) {
+                console.log(`${reservation.deletedCount} documents deleted`);
+            });
 
         resp.redirect("/reservation");
     });
@@ -1094,21 +1252,27 @@ function add(server) {
         console.log(name);
         console.log(lab);
 
+        let datetime = new Date();
         const numDate = new Date(date);
         const month = numDate.getMonth(); // Adding 1 because months are zero-indexed
         const day = numDate.getDate();
         const year = numDate.getFullYear();
-        const timeParts = time.split(' ');
-        const specTime = timeParts[0].split(':');
-        let datetime = new Date();
+        const timeParts = time.split(" ");
+        const specTime = timeParts[0].split(":");
+        let numTime = specTime.map(str => parseInt(str));
+        if (String(timeParts[1]) == "PM") {
+            numTime[0] += 12;
+        }
         datetime.setFullYear(year, month, day);
-        datetime.setHours(specTime[0], specTime[1], 0, 0);
+        datetime.setHours(numTime[0], numTime[1], 0, 0);
 
         console.log(datetime);
 
-        reservationModel.deleteMany({ name: name, lab: lab, datetime: datetime }).then(function (reservation) {
-            console.log(`${reservation.deletedCount} documents deleted`);
-        });
+        reservationModel
+            .deleteMany({ name: name, lab: lab, datetime: datetime })
+            .then(function (reservation) {
+                console.log(`${reservation.deletedCount} documents deleted`);
+            });
 
         resp.redirect("./edit-reservation/" + name);
     });

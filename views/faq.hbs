@@ -21,7 +21,7 @@
                     <div class="accordion-body">
                         {{answer}}
                         {{#if ../isTech}}
-                        <div class="d-flex justify-content-center mt-2">
+                        <div class="d-flex justify-content-center mt-3">
                             <form action="../delete-faq" method="post">
                                 <input type="hidden" name="id" value="{{_id}}">
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal"
@@ -37,7 +37,7 @@
         </div>
         {{#if isTech}}
         {{#each faq}}
-        <div class="modal fade" id="faq-{{increment @index}}" data-bs-backdrop="static" data-bs-keyboard="true"
+        <div class="modal modal-lg fade" id="faq-{{increment @index}}" data-bs-backdrop="static" data-bs-keyboard="true"
             tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -55,10 +55,10 @@
                             </div>
                             <div class="mb-3">
                                 <label for="answer" class="form-label">Answer</label>
-                                <textarea class="form-control" id="answer" name="answer">{{answer}}</textarea>
+                                <textarea class="form-control" id="answer" name="answer" rows="10">{{answer}}</textarea>
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer d-flex justify-content-center ">
                             <button type="submit" class="btn btn-success">Save</button>
                         </div>
                     </form>
@@ -78,7 +78,7 @@
                         <h1 class="modal-title fs-5">Add FAQ</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <form action="../create-faq" method="post">
+                    <form action="../add-faq" method="post">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="question" class="form-label">Question</label>

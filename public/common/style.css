@@ -108,7 +108,9 @@ td {
     margin-right: 5px;
 }
 
-.save_btn, .anon_checkbox_res {
+.save_btn,
+.cancel_btn,
+.anon_checkbox_res {
     display: none;
 }
 

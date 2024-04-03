@@ -3,56 +3,273 @@
 {{else}}
 {{> navigation}}
 {{/if}}
-{{#if isTech}}
-<div class="h-100">
-    {{else}}
-    <div class="h-auto">
-        {{/if}}
-        <div class="d-flex bg-white">
-            {{#if reservedSlots}}
-            {{#if isTech}}
-            <div class="d-flex flex-wrap justify-content-center">
-                {{else}}
-                <div class="d-flex flex-column w-25">
-                    {{/if}}
-                    {{#each reservedSlots as |slot slotIndex|}}
-                    <div class="reserved_slot shadow m-4 p-3" data-bs-toggle="modal"
-                        data-bs-target="#modal-{{slotIndex}}-reserved">
-                        <h1>{{lab}}</h1>
-                        <b>Time:<br /></b>{{time}}<br />
-                        <b>Date: </b>{{date}}<br />
-                        <b>Seat/s Left: {{avail_seats}}</b>
+<div class="d-flex bg-white min-vh-100 overflow-auto">
+    {{#if reservedSlots}}
+    {{#if isTech}}
+    <div class="d-flex flex-wrap justify-content-center h-100">
+        {{else}}
+        <div class="d-flex flex-column w-25">
+            {{/if}}
+            {{#each reservedSlots as |slot slotIndex|}}
+            <div class="reserved_slot shadow m-4 p-3" data-bs-toggle="modal"
+                data-bs-target="#modal-{{slotIndex}}-reserved">
+                <h1>{{lab}}</h1>
+                <b>Time:<br /></b>{{time}}<br />
+                <b>Date: </b>{{date}}<br />
+                <b>Seat/s Left: {{avail_seats}}</b>
+            </div>
+            <div class="modal fade" id="modal-{{slotIndex}}-reserved" data-bs-backdrop="static" data-bs-keyboard="true"
+                tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5">{{lab}}</h1>
+                            <br />
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                onclick="resetReservation()"></button>
+                        </div>
+                        <div class="modal-body d-flex justify-content-center">
+                            <div>
+                                <div class="d-flex mb-3">
+                                    <div>
+                                        <b>Date:</b>&nbsp{{date}}
+                                        <div class="mx-auto"></div>
+                                        <b>Date Requested:</b>&nbsp{{date_requested}}
+                                    </div>
+                                    <div class="mx-auto"></div>
+                                    <div>
+                                        <b>Time:</b>&nbsp{{time}}
+                                        <div class="mx-auto"></div>
+                                        <b>Time Requested:</b>&nbsp{{time_requested}}
+                                    </div>
+                                </div>
+                                <table>
+                                    <tr>
+                                        <td class="bg-secondary text-white rounded-3" colspan="11">Front</td>
+                                    </tr>
+                                    {{#each this.seats as |seat seatIndex|}}
+                                    {{#if (desk seatIndex)}}
+                                    <tr>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td class="px-4"></td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td class="px-4"></td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                        <td>
+                                            <img class="desk" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            {{#if this.reserved}}
+                                            {{#if this.isUser}}
+                                            <img class="chair reserved_chair rounded-3"
+                                                id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                            seatIndex}}
+                                            {{else}}
+                                            {{#if this.isAnonymous}}
+                                            <img class="chair anon_chair rounded-3" /><br>S{{increment
+                                            seatIndex}}
+                                            {{else}}
+                                            <a tabindex="0" class="btn btn-sm" role="button"
+                                                data-bs-container="#modal-{{slotIndex}}-reserved .modal-body"
+                                                data-bs-toggle="popover" data-bs-trigger="focus"
+                                                data-bs-title="<a class='link-dark' href='../profile/{{this.name}}'>
+                                                    <img src='{{this.profile}}' id='profile-res' class='border border-success border-2 rounded-circle'></a>&nbsp
+                                                    <a class='link-dark' href='../profile/{{this.name}}'>{{this.fullname}}</a>" data-bs-html="true"
+                                                data-bs-content="{{this.description}}" data-bs-placement="top">
+                                                <img class="chair user_chair rounded-3"
+                                                    id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                                seatIndex}}
+                                            </a>
+                                            {{/if}}
+                                            {{/if}}
+                                            {{else}}
+                                            <img class="chair rounded-3"
+                                                id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                            seatIndex}}
+                                            {{/if}}
+                                        </td>
+                                        {{else}}
+                                        <td>
+                                            {{#if this.reserved}}
+                                            {{#if this.isUser}}
+                                            <img class="chair reserved_chair rounded-3"
+                                                id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                            seatIndex}}
+                                            {{else}}
+                                            {{#if this.isAnonymous}}
+                                            <img class="chair anon_chair rounded-3" /><br>S{{increment
+                                            seatIndex}}
+                                            {{else}}
+                                            <a tabindex="0" class="btn btn-sm" role="button"
+                                                data-bs-container="#modal-{{slotIndex}}-reserved .modal-body"
+                                                data-bs-toggle="popover" data-bs-trigger="focus"
+                                                data-bs-title="<a class='link-dark' href='../profile/{{this.name}}'>
+                                                    <img src='{{this.profile}}' id='profile-res' class='border border-success border-2 rounded-circle'></a>&nbsp
+                                                    <a class='link-dark' href='../profile/{{this.name}}'>{{this.fullname}}</a>" data-bs-html="true"
+                                                data-bs-content="{{this.description}}" data-bs-placement="top">
+                                                <img class="chair user_chair rounded-3"
+                                                    id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                                seatIndex}}
+                                            </a>
+                                            {{/if}}
+                                            {{/if}}
+                                            {{else}}
+                                            <img class="chair rounded-3"
+                                                id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                            seatIndex}}
+                                            {{/if}}
+                                        </td>
+                                        {{#if (space seatIndex)}}
+                                        <td class="px-4"></td>
+                                        {{/if}}
+                                        {{/if}}
+                                        {{/each}}
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-center">
+                            <div>
+                                <div class="form-check mb-3 anon_checkbox_res">
+                                    <input class="form-check-input anon_checkbox" type="checkbox"
+                                        id="anonymous{{slotIndex}}-reserved" name="anonymous" />
+                                    <label class="form-check-label" for="anonymous">Reserve Anonymously</label>
+                                </div>
+                                <button type="button" class="edit_btn btn btn-warning" onclick="editReservation()"
+                                    id="edit_reservation-{{slotIndex}}">Edit</button>
+                                <button type="button" class="cancel_btn btn btn-warning" onclick="cancelReservation()"
+                                    id="cancel_reservation-{{slotIndex}}">Cancel</button>
+                                <button type="button" class="save_btn btn btn-success"
+                                    id="confirm_button-{{slotIndex}}-reserved" data-bs-toggle="modal"
+                                    data-bs-target="#confirm-{{slotIndex}}-reserved" onclick="reserve({{slotIndex}})"
+                                    disabled>
+                                    Save</button>
+                                {{#if ../isTech}}
+                                <button type="button" class="btn btn-danger"
+                                    onclick="deleteReservationTech('{{lab}}', '{{time}}', '{{date}}', '{{../fullname}}')"
+                                    id="delete_reservation-{{slotIndex}}">Delete</button>
+                                {{else}}
+                                <button type="button" class="btn btn-danger"
+                                    onclick="deleteReservation('{{lab}}', '{{time}}', '{{date}}')"
+                                    id="delete_reservation-{{slotIndex}}">Delete</button>
+                                {{/if}}
+                            </div>
+                        </div>
                     </div>
-                    <div class="modal fade" id="modal-{{slotIndex}}-reserved" data-bs-backdrop="static"
-                        data-bs-keyboard="true" tabindex="-1">
+                </div>
+            </div>
+            <div class="modal fade" id="confirm-{{slotIndex}}-reserved" data-bs-backdrop="static"
+                data-bs-keyboard="true" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5">Confirm Reservation</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                onclick="resetReservation()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <b>Laboratory: </b><span id="lab-{{slotIndex}}-reserved">{{lab}}</span><br />
+                            <b>Date: </b><span id="date-{{slotIndex}}-reserved">{{date}}</span><br />
+                            <b>Time: </b><span id="time-{{slotIndex}}-reserved">{{time}}</span><br />
+                            <b>Seat/s Selected: </b><span id="seats-{{slotIndex}}-reserved"></span><br />
+                            <b>Reserved Anonymously: </b> <span id="anon-{{slotIndex}}-reserved"></span><br />
+                            Confirm your reservation?
+                        </div>
+                        <div class="modal-footer">
+                            {{#if ../isTech}}
+                            <a class="btn btn-success" href="#"
+                                onclick="confirmReservationTech({{slotIndex}}, '{{../fullname}}', 'edit')"
+                                role="button">Confirm</a>
+                            {{else}}
+                            <a class="btn btn-success" href="#" onclick="confirmReservation({{slotIndex}}, 'edit')"
+                                role="button">Confirm</a>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
+        {{#if slots}}
+        <div class="w-100">
+            <div class="d-flex justify-content-center bg-light rounded-4 m-3 p-3 shadow">
+                <div class="mx-auto w-25">
+                    <label for="date">Date</label>
+                    <select class="form-select" id="date">
+                    </select>
+                </div>
+                <div class="mx-auto w-25">
+                    <label for="time">Time</label>
+                    <select class="form-select" id="time">
+                    </select>
+                </div>
+                <div class="mx-auto w-25">
+                    <label for="lab">Laboratory</label>
+                    <select class="form-select" id="lab">
+                        {{#each lab}}
+                        <option value="{{name}}">{{name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+            </div>
+            <div id="alert"></div>
+            <div class="d-flex flex-wrap justify-content-center" id="slots">
+                {{#each slots as |slot slotIndex|}}
+                {{#if available}}
+                <div class="slot shadow m-4 p-3" data-bs-toggle="modal" data-bs-target="#modal-{{slotIndex}}">
+                    {{else}}
+                    <div class="full_slot shadow m-4 p-3" data-bs-toggle="modal" data-bs-target="#modal-{{slotIndex}}">
+                        {{/if}}
+                        <h1>{{lab}}</h1>
+                        <b>Time: </b><br>{{time_in}} - {{time_out}}<br />
+                        <b>Date: </b>{{date}}<br />
+                        <b>Seat/s Left: </b>{{avail_seats}}
+                    </div>
+                    <div class="modal fade" id="modal-{{slotIndex}}" data-bs-backdrop="static" data-bs-keyboard="true"
+                        tabindex="-1">
                         <div class="modal-dialog modal-xl">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5">{{lab}}</h1>
-                                    <br />
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        onclick="resetReservation()"></button>
+                                        onclick="reset()"></button>
                                 </div>
                                 <div class="modal-body d-flex justify-content-center">
                                     <div>
                                         <div class="d-flex mb-3">
-                                            <div>
-                                                <b>Date:</b>&nbsp{{date}}
-                                                <div class="mx-auto"></div>
-                                                <b>Date Requested:</b>&nbsp{{date_requested}}
-                                            </div>
+                                            <b>Date:</b>&nbsp{{date}}
                                             <div class="mx-auto"></div>
-                                            <div>
-                                                <b>Time:</b>&nbsp{{time}}
-                                                <div class="mx-auto"></div>
-                                                <b>Time Requested:</b>&nbsp{{time_requested}}
-                                            </div>
+                                            <b>Time:</b>&nbsp{{time_in}} - {{time_out}}
                                         </div>
                                         <table>
                                             <tr>
-                                                <td class="bg-secondary text-white rounded-3" colspan="11">Front</td>
+                                                <td class="bg-secondary text-white rounded-3" colspan="11">Front
+                                                </td>
                                             </tr>
-                                            {{#each this.seats as |seat seatIndex|}}
+                                            {{#each seats as |seat seatIndex|}}
                                             {{#if (desk seatIndex)}}
                                             <tr>
                                                 <td>
@@ -88,62 +305,52 @@
                                             <tr>
                                                 <td>
                                                     {{#if this.reserved}}
-                                                    {{#if this.isUser}}
-                                                    <img class="chair reserved_chair rounded-3"
-                                                        id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
-                                                    seatIndex}}
-                                                    {{else}}
                                                     {{#if this.isAnonymous}}
                                                     <img class="chair anon_chair rounded-3" /><br>S{{increment
                                                     seatIndex}}
                                                     {{else}}
                                                     <a tabindex="0" class="btn btn-sm" role="button"
-                                                        data-bs-container="#modal-{{slotIndex}}-reserved .modal-body"
+                                                        data-bs-container="#modal-{{slotIndex}} .modal-body"
                                                         data-bs-toggle="popover" data-bs-trigger="focus"
                                                         data-bs-title="<a class='link-dark' href='../profile/{{this.name}}'>
                                                     <img src='{{this.profile}}' id='profile-res' class='border border-success border-2 rounded-circle'></a>&nbsp
                                                     <a class='link-dark' href='../profile/{{this.name}}'>{{this.fullname}}</a>" data-bs-html="true"
                                                         data-bs-content="{{this.description}}" data-bs-placement="top">
                                                         <img class="chair user_chair rounded-3"
-                                                            id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                                            id="chair-{{slotIndex}}-{{increment seatIndex}}" /><br>S{{increment
                                                         seatIndex}}
                                                     </a>
                                                     {{/if}}
-                                                    {{/if}}
                                                     {{else}}
                                                     <img class="chair rounded-3"
-                                                        id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                                        id="chair-{{slotIndex}}-{{increment seatIndex}}"
+                                                        onclick="selectSeat('chair-{{slotIndex}}-{{increment seatIndex}}')" /><br>S{{increment
                                                     seatIndex}}
                                                     {{/if}}
                                                 </td>
                                                 {{else}}
                                                 <td>
                                                     {{#if this.reserved}}
-                                                    {{#if this.isUser}}
-                                                    <img class="chair reserved_chair rounded-3"
-                                                        id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
-                                                    seatIndex}}
-                                                    {{else}}
                                                     {{#if this.isAnonymous}}
                                                     <img class="chair anon_chair rounded-3" /><br>S{{increment
                                                     seatIndex}}
                                                     {{else}}
                                                     <a tabindex="0" class="btn btn-sm" role="button"
-                                                        data-bs-container="#modal-{{slotIndex}}-reserved .modal-body"
+                                                        data-bs-container="#modal-{{slotIndex}} .modal-body"
                                                         data-bs-toggle="popover" data-bs-trigger="focus"
                                                         data-bs-title="<a class='link-dark' href='../profile/{{this.name}}'>
                                                     <img src='{{this.profile}}' id='profile-res' class='border border-success border-2 rounded-circle'></a>&nbsp
                                                     <a class='link-dark' href='../profile/{{this.name}}'>{{this.fullname}}</a>" data-bs-html="true"
                                                         data-bs-content="{{this.description}}" data-bs-placement="top">
                                                         <img class="chair user_chair rounded-3"
-                                                            id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                                            id="chair-{{slotIndex}}-{{increment seatIndex}}" /><br>S{{increment
                                                         seatIndex}}
                                                     </a>
                                                     {{/if}}
-                                                    {{/if}}
                                                     {{else}}
                                                     <img class="chair rounded-3"
-                                                        id="chair-{{slotIndex}}-{{increment seatIndex}}-reserved" /><br>S{{increment
+                                                        id="chair-{{slotIndex}}-{{increment seatIndex}}"
+                                                        onclick="selectSeat('chair-{{slotIndex}}-{{increment seatIndex}}')" /><br>S{{increment
                                                     seatIndex}}
                                                     {{/if}}
                                                 </td>
@@ -155,60 +362,55 @@
                                         </table>
                                     </div>
                                 </div>
+                                {{#if available}}
                                 <div class="modal-footer d-flex justify-content-center">
                                     <div>
-                                        <div class="form-check mb-3 anon_checkbox_res">
+                                        <div class="form-check mb-3">
                                             <input class="form-check-input anon_checkbox" type="checkbox"
-                                                id="anonymous{{slotIndex}}-reserved" name="anonymous" />
-                                            <label class="form-check-label" for="anonymous">Reserve Anonymously</label>
+                                                id="anonymous{{slotIndex}}" name="anonymous" />
+                                            <label class="form-check-label" for="anonymous">Reserve
+                                                Anonymously</label>
                                         </div>
-                                        <button type="button" class="edit_btn btn btn-warning"
-                                            onclick="editReservation()"
-                                            id="edit_reservation-{{slotIndex}}">Edit</button>
-                                        <button type="button" class="save_btn btn btn-success"
-                                            id="confirm_button-{{slotIndex}}-reserved" data-bs-toggle="modal"
-                                            data-bs-target="#confirm-{{slotIndex}}-reserved"
-                                            onclick="reserve({{slotIndex}})" disabled>
-                                            Save</button>
-                                        {{#if ../isTech}}
-                                        <button type="button" class="btn btn-danger"
-                                            onclick="deleteReservationTech('{{lab}}', '{{time}}', '{{date}}', '{{../fullname}}')"
-                                            id="delete_reservation-{{slotIndex}}">Delete</button>
-                                        {{else}}
-                                        <button type="button" class="btn btn-danger"
-                                            onclick="deleteReservation('{{lab}}', '{{time}}', '{{date}}')"
-                                            id="delete_reservation-{{slotIndex}}">Delete</button>
-                                        {{/if}}
+                                        <div class="d-flex justify-content-center">
+                                            <button type="button" class="btn btn-success"
+                                                id="confirm_button-{{slotIndex}}" data-bs-toggle="modal"
+                                                data-bs-target="#confirm-{{slotIndex}}" onclick="reserve({{slotIndex}})"
+                                                disabled>
+                                                Reserve
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+                                {{/if}}
                             </div>
                         </div>
                     </div>
-                    <div class="modal fade" id="confirm-{{slotIndex}}-reserved" data-bs-backdrop="static"
-                        data-bs-keyboard="true" tabindex="-1">
+                    <div class="modal fade" id="confirm-{{slotIndex}}" data-bs-backdrop="static" data-bs-keyboard="true"
+                        tabindex="-1">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5">Confirm Reservation</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        onclick="resetReservation()"></button>
+                                        onclick="reset()"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <b>Laboratory: </b><span id="lab-{{slotIndex}}-reserved">{{lab}}</span><br />
-                                    <b>Date: </b><span id="date-{{slotIndex}}-reserved">{{date}}</span><br />
-                                    <b>Time: </b><span id="time-{{slotIndex}}-reserved">{{time}}</span><br />
-                                    <b>Seat/s Selected: </b><span id="seats-{{slotIndex}}-reserved"></span><br />
-                                    <b>Reserved Anonymously: </b> <span id="anon-{{slotIndex}}-reserved"></span><br />
+                                    <b>Laboratory: </b><span id="lab-{{slotIndex}}">{{lab}}</span><br />
+                                    <b>Date: </b><span id="date-{{slotIndex}}">{{date}}</span><br />
+                                    <b>Time: </b><span id="time-{{slotIndex}}">{{time_in}} -
+                                        {{time_out}}</span><br />
+                                    <b>Seat/s Selected: </b><span id="seats-{{slotIndex}}"></span><br />
+                                    <b>Reserved Anonymously: </b> <span id="anon-{{slotIndex}}"></span><br />
                                     Confirm your reservation?
                                 </div>
                                 <div class="modal-footer">
                                     {{#if ../isTech}}
                                     <a class="btn btn-success" href="#"
-                                        onclick="confirmReservationTech({{slotIndex}}, '{{../fullname}}')"
+                                        onclick="confirmReservationTech({{slotIndex}}, '{{../fullname}}', 'add')"
                                         role="button">Confirm</a>
                                     {{else}}
-                                    <a class="btn btn-success" href="#" onclick="confirmReservation({{slotIndex}})"
-                                        role="button">Confirm</a>
+                                    <a class="btn btn-success" href="#"
+                                        onclick="confirmReservation({{slotIndex}}, 'add')" role="button">Confirm</a>
                                     {{/if}}
                                 </div>
                             </div>
@@ -216,225 +418,14 @@
                     </div>
                     {{/each}}
                 </div>
-                {{/if}}
-                {{#if slots}}
-                <div class="w-100">
-                    <div class="d-flex justify-content-center bg-light rounded-4 m-3 p-3 shadow">
-                        <div class="mx-auto w-25">
-                            <label for="date">Date</label>
-                            <select class="form-select" id="date">
-                            </select>
-                        </div>
-                        <div class="mx-auto w-25">
-                            <label for="time">Time</label>
-                            <select class="form-select" id="time">
-                            </select>
-                        </div>
-                        <div class="mx-auto w-25">
-                            <label for="lab">Laboratory</label>
-                            <select class="form-select" id="lab">
-                                {{#each lab}}
-                                <option value="{{name}}">{{name}}</option>
-                                {{/each}}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-wrap justify-content-center" id="slots">
-                        {{#each slots as |slot slotIndex|}}
-                        {{#if available}}
-                        <div class="slot shadow m-4 p-3" data-bs-toggle="modal" data-bs-target="#modal-{{slotIndex}}">
-                            {{else}}
-                            <div class="full_slot shadow m-4 p-3" data-bs-toggle="modal"
-                                data-bs-target="#modal-{{slotIndex}}">
-                                {{/if}}
-                                <h1>{{lab}}</h1>
-                                <b>Time: </b><br>{{time_in}} - {{time_out}}<br />
-                                <b>Date: </b>{{date}}<br />
-                                <b>Seat/s Left: </b>{{avail_seats}}
-                            </div>
-                            <div class="modal fade" id="modal-{{slotIndex}}" data-bs-backdrop="static"
-                                data-bs-keyboard="true" tabindex="-1">
-                                <div class="modal-dialog modal-xl">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5">{{lab}}</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                onclick="reset()"></button>
-                                        </div>
-                                        <div class="modal-body d-flex justify-content-center">
-                                            <div>
-                                                <div class="d-flex mb-3">
-                                                    <b>Date:</b>&nbsp{{date}}
-                                                    <div class="mx-auto"></div>
-                                                    <b>Time:</b>&nbsp{{time_in}} - {{time_out}}
-                                                </div>
-                                                <table>
-                                                    <tr>
-                                                        <td class="bg-secondary text-white rounded-3" colspan="11">Front
-                                                        </td>
-                                                    </tr>
-                                                    {{#each seats as |seat seatIndex|}}
-                                                    {{#if (desk seatIndex)}}
-                                                    <tr>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td class="px-4"></td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td class="px-4"></td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                        <td>
-                                                            <img class="desk" />
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            {{#if this.reserved}}
-                                                            {{#if this.isAnonymous}}
-                                                            <img class="chair anon_chair rounded-3" /><br>S{{increment
-                                                            seatIndex}}
-                                                            {{else}}
-                                                            <a tabindex="0" class="btn btn-sm" role="button"
-                                                                data-bs-container="#modal-{{slotIndex}} .modal-body"
-                                                                data-bs-toggle="popover" data-bs-trigger="focus"
-                                                                data-bs-title="<a class='link-dark' href='../profile/{{this.name}}'>
-                                                    <img src='{{this.profile}}' id='profile-res' class='border border-success border-2 rounded-circle'></a>&nbsp
-                                                    <a class='link-dark' href='../profile/{{this.name}}'>{{this.fullname}}</a>"
-                                                                data-bs-html="true"
-                                                                data-bs-content="{{this.description}}"
-                                                                data-bs-placement="top">
-                                                                <img class="chair user_chair rounded-3"
-                                                                    id="chair-{{slotIndex}}-{{increment seatIndex}}" /><br>S{{increment
-                                                                seatIndex}}
-                                                            </a>
-                                                            {{/if}}
-                                                            {{else}}
-                                                            <img class="chair rounded-3"
-                                                                id="chair-{{slotIndex}}-{{increment seatIndex}}"
-                                                                onclick="selectSeat('chair-{{slotIndex}}-{{increment seatIndex}}')" /><br>S{{increment
-                                                            seatIndex}}
-                                                            {{/if}}
-                                                        </td>
-                                                        {{else}}
-                                                        <td>
-                                                            {{#if this.reserved}}
-                                                            {{#if this.isAnonymous}}
-                                                            <img class="chair anon_chair rounded-3" /><br>S{{increment
-                                                            seatIndex}}
-                                                            {{else}}
-                                                            <a tabindex="0" class="btn btn-sm" role="button"
-                                                                data-bs-container="#modal-{{slotIndex}} .modal-body"
-                                                                data-bs-toggle="popover" data-bs-trigger="focus"
-                                                                data-bs-title="<a class='link-dark' href='../profile/{{this.name}}'>
-                                                    <img src='{{this.profile}}' id='profile-res' class='border border-success border-2 rounded-circle'></a>&nbsp
-                                                    <a class='link-dark' href='../profile/{{this.name}}'>{{this.fullname}}</a>"
-                                                                data-bs-html="true"
-                                                                data-bs-content="{{this.description}}"
-                                                                data-bs-placement="top">
-                                                                <img class="chair user_chair rounded-3"
-                                                                    id="chair-{{slotIndex}}-{{increment seatIndex}}" /><br>S{{increment
-                                                                seatIndex}}
-                                                            </a>
-                                                            {{/if}}
-                                                            {{else}}
-                                                            <img class="chair rounded-3"
-                                                                id="chair-{{slotIndex}}-{{increment seatIndex}}"
-                                                                onclick="selectSeat('chair-{{slotIndex}}-{{increment seatIndex}}')" /><br>S{{increment
-                                                            seatIndex}}
-                                                            {{/if}}
-                                                        </td>
-                                                        {{#if (space seatIndex)}}
-                                                        <td class="px-4"></td>
-                                                        {{/if}}
-                                                        {{/if}}
-                                                        {{/each}}
-                                                </table>
-                                            </div>
-                                        </div>
-                                        {{#if available}}
-                                        <div class="modal-footer d-flex justify-content-center">
-                                            <div>
-                                                <div class="form-check mb-3">
-                                                    <input class="form-check-input anon_checkbox" type="checkbox"
-                                                        id="anonymous{{slotIndex}}" name="anonymous" />
-                                                    <label class="form-check-label" for="anonymous">Reserve
-                                                        Anonymously</label>
-                                                </div>
-                                                <div class="d-flex justify-content-center">
-                                                    <button type="button" class="btn btn-success"
-                                                        id="confirm_button-{{slotIndex}}" data-bs-toggle="modal"
-                                                        data-bs-target="#confirm-{{slotIndex}}"
-                                                        onclick="reserve({{slotIndex}})" disabled>
-                                                        Reserve
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{/if}}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal fade" id="confirm-{{slotIndex}}" data-bs-backdrop="static"
-                                data-bs-keyboard="true" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5">Confirm Reservation</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                onclick="reset()"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <b>Laboratory: </b><span id="lab-{{slotIndex}}">{{lab}}</span><br />
-                                            <b>Date: </b><span id="date-{{slotIndex}}">{{date}}</span><br />
-                                            <b>Time: </b><span id="time-{{slotIndex}}">{{time_in}} -
-                                                {{time_out}}</span><br />
-                                            <b>Seat/s Selected: </b><span id="seats-{{slotIndex}}"></span><br />
-                                            <b>Reserved Anonymously: </b> <span id="anon-{{slotIndex}}"></span><br />
-                                            Confirm your reservation?
-                                        </div>
-                                        <div class="modal-footer">
-                                            {{#if ../isTech}}
-                                            <a class="btn btn-success" href="#"
-                                                onclick="confirmReservationTech({{slotIndex}}, '{{../fullname}}')"
-                                                role="button">Confirm</a>
-                                            {{else}}
-                                            <a class="btn btn-success" href="#"
-                                                onclick="confirmReservation({{slotIndex}})" role="button">Confirm</a>
-                                            {{/if}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {{/each}}
-                        </div>
-                    </div>
-                </div>
-                {{/if}}
-                <input type="text" id="name" value="{{name}}" hidden>
-                <input type="text" id="isTech" value="{{isTech}}" hidden>
             </div>
         </div>
+        {{/if}}
+        <input type="text" id="name" value="{{name}}" hidden>
+        <input type="text" id="isTech" value="{{isTech}}" hidden>
     </div>
-    {{#if isTech}}
-    {{> footer-user}}
-    {{/if}}
-    {{> logout}}
+</div>
+{{#if isTech}}
+{{> footer-user}}
+{{/if}}
+{{> logout}}

@@ -131,35 +131,34 @@ function resetReservation() {
         .not(".user_chair, .anon_chair, .reserved_chair")
         .css("background-color", "#2E8B57");
     $(".reserved_chair").css("background-color", "#DAA520");
-    $(".edit_btn").text("Edit");
+    $(".edit_btn").show();
+    $(".cancel_btn").hide();
     $(".save_btn").hide().prop("disabled", true);
     $(".anon_checkbox_res").hide();
     $(".anon_checkbox").prop("checked", false);
-    $("img.chair[id$='-reserved']:not(.user_chair):not(.anon_chair)")
-        .click(function () {
-            selectSeat(this.id);
-        });
+    $("img.chair[id$='-reserved']:not(.user_chair):not(.anon_chair)").off(
+        "click"
+    );
 }
 
 function editReservation() {
-    var chairId = $(".chair").not(".user_chair, .anon_chair").first().attr("id");
-    var idParts = chairId.split('-');
-    var slotNum = idParts[1];
-    $("img.chair[id$='-reserved']:not(.user_chair):not(.anon_chair)")
-        .click(function () {
+    $("img.chair[id$='-reserved']:not(.user_chair):not(.anon_chair)").click(
+        function () {
             selectSeat(this.id);
-        });
+        }
+    );
+    $(".edit_btn").hide();
+    $(".save_btn").show();
+    $(".cancel_btn").show();
+    $(".anon_checkbox_res").show();
+}
 
-    if ($("#edit_reservation-" + slotNum).text() === "Edit") {
-        $("#edit_reservation-" + slotNum).text("Cancel");
-        $(".save_btn").show();
-        $(".anon_checkbox_res").show();
-    } else {
-        $("#edit_reservation-" + slotNum).text("Edit");
-        $(".save_btn").hide();
-        $(".anon_checkbox_res").hide();
-        resetReservation();
-    }
+function cancelReservation() {
+    $(".edit_btn").show();
+    $(".save_btn").hide();
+    $(".cancel_btn").hide();
+    $(".anon_checkbox_res").hide();
+    resetReservation();
 }
 
 function editProfile(url) {
@@ -192,11 +191,17 @@ function deleteFAQ(id) {
 function reserve(slotNum) {
     $("#seats-" + slotNum).text("");
     $("#seats-" + slotNum + "-reserved").text("");
-    for(var i = 1; i <= 45; i++) {
-        if ($("#chair-" + slotNum + "-" + i).css("background-color") === "rgb(218, 165, 32)") {
+    for (var i = 1; i <= 45; i++) {
+        if (
+            $("#chair-" + slotNum + "-" + i).css("background-color") ===
+            "rgb(218, 165, 32)"
+        ) {
             $("#seats-" + slotNum).append("S" + i + ", ");
         }
-        if ($("#chair-" + slotNum + "-" + i + "-reserved").css("background-color") === "rgb(218, 165, 32)") {
+        if (
+            $("#chair-" + slotNum + "-" + i + "-reserved").css("background-color") ===
+            "rgb(218, 165, 32)"
+        ) {
             $("#seats-" + slotNum + "-reserved").append("S" + i + ", ");
         }
     }
@@ -210,31 +215,56 @@ function reserve(slotNum) {
             .text()
             .slice(0, -2)
     );
-    if (document.getElementById("anonymous" + slotNum).checked || document.getElementById("anonymous" + slotNum + "-reserved").checked) {
-        $("#anon-" + slotNum).text("Yes");
-        $("#anon-" + slotNum + "-reserved").text("Yes");
-    } else {
-        $("#anon-" + slotNum).text("No");
-        $("#anon-" + slotNum + "-reserved").text("No");
+    if (document.getElementById("anonymous" + slotNum)){
+        if (document.getElementById("anonymous" + slotNum).checked) {
+            $("#anon-" + slotNum).text("Yes");
+        } else {
+            $("#anon-" + slotNum).text("No");
+        }
+    }
+    if (document.getElementById("anonymous" + slotNum + "-reserved")) {
+        if (document.getElementById("anonymous" + slotNum + "-reserved").checked) {
+            $("#anon-" + slotNum + "-reserved").text("Yes");
+        } else {
+            $("#anon-" + slotNum + "-reserved").text("No");
+        }
     }
 }
 
-function confirmReservation(slotIndex) {
-    let lab = document.getElementById(`lab-${slotIndex}`).innerText;
-    let date = document.getElementById(`date-${slotIndex}`).innerText;
-    let time = document.getElementById(`time-${slotIndex}`).innerText;
-    let seats = document.getElementById(`seats-${slotIndex}`).innerText;
-    let anon = document.getElementById(`anon-${slotIndex}`).innerText;
+function confirmReservation(slotIndex, mode) {
+    let lab, date, time, seats, anon;
+    if (mode === "add") {
+        lab = document.getElementById(`lab-${slotIndex}`).innerText;
+        date = document.getElementById(`date-${slotIndex}`).innerText;
+        time = document.getElementById(`time-${slotIndex}`).innerText;
+        seats = document.getElementById(`seats-${slotIndex}`).innerText;
+        anon = document.getElementById(`anon-${slotIndex}`).innerText;
+    } else if (mode === "edit") {
+        lab = document.getElementById(`lab-${slotIndex}-reserved`).innerText;
+        date = document.getElementById(`date-${slotIndex}-reserved`).innerText;
+        time = document.getElementById(`time-${slotIndex}-reserved`).innerText;
+        seats = document.getElementById(`seats-${slotIndex}-reserved`).innerText;
+        anon = document.getElementById(`anon-${slotIndex}-reserved`).innerText;
+    }
 
     window.location.href = `/confirm-reservation?lab=${lab}&date=${date}&time=${time}&seats=${seats}&anon=${anon}`;
 }
 
-function confirmReservationTech(slotIndex, name) {
-    let lab = document.getElementById(`lab-${slotIndex}`).innerText;
-    let date = document.getElementById(`date-${slotIndex}`).innerText;
-    let time = document.getElementById(`time-${slotIndex}`).innerText;
-    let seats = document.getElementById(`seats-${slotIndex}`).innerText;
-    let anon = document.getElementById(`anon-${slotIndex}`).innerText;
+function confirmReservationTech(slotIndex, name, mode) {
+    let lab, date, time, seats, anon;
+    if (mode === "add") {
+        lab = document.getElementById(`lab-${slotIndex}`).innerText;
+        date = document.getElementById(`date-${slotIndex}`).innerText;
+        time = document.getElementById(`time-${slotIndex}`).innerText;
+        seats = document.getElementById(`seats-${slotIndex}`).innerText;
+        anon = document.getElementById(`anon-${slotIndex}`).innerText;
+    } else if (mode === "edit") {
+        lab = document.getElementById(`lab-${slotIndex}-reserved`).innerText;
+        date = document.getElementById(`date-${slotIndex}-reserved`).innerText;
+        time = document.getElementById(`time-${slotIndex}-reserved`).innerText;
+        seats = document.getElementById(`seats-${slotIndex}-reserved`).innerText;
+        anon = document.getElementById(`anon-${slotIndex}-reserved`).innerText;
+    }
 
     window.location.href = `/confirm-reservation-tech?lab=${lab}&date=${date}&time=${time}&seats=${seats}&anon=${anon}&name=${name}`;
 }
@@ -270,7 +300,10 @@ function selectSeat(chair) {
         if (chairColor_res === "rgb(218, 165, 32)") {
             foundYellow_res = true;
         }
-        if ((isRes && chairColor_res === "rgb(46, 139, 87)") || (!isRes && !isAnon && !isUser && chairColor_res === "rgb(218, 165, 32)")) {
+        if (
+            (isRes && chairColor_res === "rgb(46, 139, 87)") ||
+            (!isRes && !isAnon && !isUser && chairColor_res === "rgb(218, 165, 32)")
+        ) {
             enable_res = true;
         }
     }
@@ -312,10 +345,24 @@ function searchSlots(date, time, lab, name, isTech) {
             let slots = data.slots;
             let isReserved = data.isReserved;
             let name = data.name;
-            alert(name);
             if (status === "success") {
                 if (isReserved) {
-                    alert("Currently have a reservation at the chosen time slot.");
+                    const alertPlaceholder = document.getElementById('alert')
+                    const appendAlert = (message, type) => {
+                        const wrapper = document.createElement('div');
+                        wrapper.classList.add('d-flex', 'justify-content-center');
+                        wrapper.innerHTML = [
+                            `<div class="alert alert-${type} w-50" role="alert" id="info-alert">`,
+                            `   ${message}`,
+                            '</div>'
+                        ].join('')
+                        alertPlaceholder.append(wrapper)
+                    }
+                    appendAlert('Currently have a reservation at the chosen time slot.', 'info');
+                    $("#info-alert").fadeTo(2000, 500).slideUp(500, function () {
+                        $("#info-alert").slideUp(500);
+                        alertPlaceholder.innerHTML = "";
+                    });
                 }
                 let div = document.getElementById("slots");
                 div.innerHTML = "";
@@ -588,7 +635,7 @@ function searchSlots(date, time, lab, name, isTech) {
                                         data-bs-toggle="modal" data-bs-target="#confirm-` +
                             i +
                             `"
-                                        onclick="reserve()" disabled>
+                                        onclick="reserve(`+ i + `)" disabled>
                                         Reserve
                                     </button>
                                 </div>
@@ -640,11 +687,19 @@ function searchSlots(date, time, lab, name, isTech) {
                             </div>
                             <div class="modal-footer">`;
                     if (isTech) {
-                        slot += `
-                        <a class="btn btn-success" href="#" onclick="confirmReservationTech(`+ i + `, '` + name + `')" role="button">Confirm</a>`;
+                        slot +=
+                            `
+                        <a class="btn btn-success" href="#" onclick="confirmReservationTech(` +
+                            i +
+                            `, '` +
+                            name +
+                            `', 'add')" role="button">Confirm</a>`;
                     } else {
-                        slot += `
-                        <a class="btn btn-success" href="#" onclick="confirmReservation(`+ i + `)" role="button">Confirm</a>`;
+                        slot +=
+                            `
+                        <a class="btn btn-success" href="#" onclick="confirmReservation(` +
+                            i +
+                            `, 'add')" role="button">Confirm</a>`;
                     }
                     slot += `
                             </div>
