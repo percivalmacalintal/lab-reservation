@@ -108,6 +108,10 @@ td {
     margin-right: 5px;
 }
 
+.save_btn, .anon_checkbox_res {
+    display: none;
+}
+
 #logos>a>img {
     width: 50px;
 }

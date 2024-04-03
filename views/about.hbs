@@ -1,0 +1,76 @@
+{{#if isTech}}
+{{> navigation-tech}}
+{{else}}
+{{> navigation}}
+{{/if}}
+<div class="d-flex justify-content-center">
+    <div class="w-75">
+        <div class="bg-success text-white text-center shadow rounded-4 p-3 m-3">
+            <h1><b>About Us</b></h1>
+        </div>
+        <div class="bg-light border border-success border-3 rounded-3 m-3 shadow p-3">
+            <h5>NPM Packages:</h5>
+            <ol class="list-group list-group-numbered">
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Express</div>
+                        Fast, unopinionated, minimalist web framework for Node.js
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Express Handlebars</div>
+                        A Handlebars view engine for Express which doesn't suck
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Body Parser</div>
+                        Node.js body parsing middleware
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Mongoose</div>
+                        Elegant mongodb object modeling for Node.js
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Bcrypt</div>
+                        A library to help you hash passwords
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Express Session</div>
+                        Simple session middleware for Express
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Connect MongoDB Session</div>
+                        MongoDB-backed session storage for Connect and Express
+                    </div>
+                </li>
+            </ol>
+            <br>
+            <h5>Third-Party Libraries:</h5>
+            <ol class="list-group list-group-numbered">
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">jQuery</div>
+                        Fast, small, and feature-rich JavaScript library
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">Bootstrap</div>
+                        The most popular HTML, CSS, and JS library in the world
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+{{> logout}}

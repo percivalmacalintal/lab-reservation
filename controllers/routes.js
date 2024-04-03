@@ -94,16 +94,29 @@ function add(server) {
     }
 
     server.get("/", function (req, resp) {
-        resp.redirect("/login");
-        return;
+        let now = new Date();
+        reservationModel.deleteMany({ datetime: { $lt: now } }).then(function (reservation) {
+            console.log(`${reservation.deletedCount} documents deleted`);
+        });
+
+        if (req.session.account_id == undefined) {
+            resp.redirect("/login");
+            return;
+        } else {
+            resp.redirect("/home");
+        }
     });
 
     server.get("/login", function (req, resp) {
-        resp.render("login", {
-            layout: "account",
-            title: "Login",
-            error: req.query.account == "failed",
-        });
+        if (req.session.account_id == undefined) {
+            resp.render("login", {
+                layout: "account",
+                title: "Login",
+                error: req.query.account == "failed",
+            });
+        } else {
+            resp.redirect("/home");
+        }
     });
 
     server.post("/login-validation", function (req, resp) {
@@ -121,7 +134,7 @@ function add(server) {
                                 req.session.account_name = account.name;
                                 req.session.account_isTech = account.isTech;
                                 if (req.body.remember) {
-                                    req.session.cookie.maxAge = 21*24*60*60*1000;
+                                    req.session.cookie.maxAge = 21 * 24 * 60 * 60 * 1000;
                                 } else {
                                     req.session.cookie.expires = false;
                                 }
@@ -141,40 +154,44 @@ function add(server) {
     });
 
     server.get("/register", function (req, resp) {
-        resp.render("register", {
-            layout: "account",
-            title: "Register",
-            error: req.query.account == "failed",
-            registered: req.query.account == "registered",
-        });
+        if (req.session.account_id == undefined) {
+            resp.render("register", {
+                layout: "account",
+                title: "Register",
+                error: req.query.account == "failed",
+                registered: req.query.account == "registered",
+            });
+        } else {
+            resp.redirect("/home");
+        }
     });
 
     server.post("/register-validation", function (req, resp) {
         const emailFormat = /^[a-zA-Z]+[._][a-zA-Z]+$/;
         if (emailFormat.test(req.body.email)) {
-            accountModel.findOne({name: req.body.email})
-            .then(function (account) {
-                if (account) {
-                    resp.redirect("/register?account=registered");
-                } else {
-                    const isTech = req.body.email.match(/\./g) ? true : false;
-                    bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
-                        if (req.body.url == "") {
-                            req.body.url = "https://upload.wikimedia.org/wikipedia/en/c/c2/De_La_Salle_University_Seal.svg";
-                        }
-                        const accountInstance = accountModel({
-                            name: req.body.email,
-                            pass: hash,
-                            description: req.body.description,
-                            profile: req.body.url,
-                            isTech: isTech,
+            accountModel.findOne({ name: req.body.email })
+                .then(function (account) {
+                    if (account) {
+                        resp.redirect("/register?account=registered");
+                    } else {
+                        const isTech = req.body.email.match(/\./g) ? true : false;
+                        bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
+                            if (req.body.url == "") {
+                                req.body.url = "https://upload.wikimedia.org/wikipedia/en/c/c2/De_La_Salle_University_Seal.svg";
+                            }
+                            const accountInstance = accountModel({
+                                name: req.body.email,
+                                pass: hash,
+                                description: req.body.description,
+                                profile: req.body.url,
+                                isTech: isTech,
+                            });
+                            accountInstance.save();
+                            resp.redirect("/login");
+                            return;
                         });
-                        accountInstance.save();
-                        resp.redirect("/login");
-                        return;
-                    });
-                }
-            });
+                    }
+                });
         } else {
             resp.redirect("/register?account=failed");
         }
@@ -395,7 +412,7 @@ function add(server) {
                 seats: seats,
             });
         }
-        
+
         return {
             slots: slots,
             reservedSlots: reservedSlots,
@@ -470,7 +487,7 @@ function add(server) {
             if (slots.length == 0) {
                 isReserved = true;
             }
-            resp.json({ slots: slots, isReserved: isReserved });
+            resp.json({ slots: slots, isReserved: isReserved, name: req.body.name.name });
         }
         getLabs();
     });
@@ -487,7 +504,7 @@ function add(server) {
             if (slots.length == 0) {
                 isReserved = true;
             }
-            resp.json({ slots: slots, isReserved: isReserved });
+            resp.json({ slots: slots, isReserved: isReserved, name: req.body.name.name });
         }
         getLabs();
     });
@@ -912,7 +929,6 @@ function add(server) {
             .lean()
             .then(function (faqs) {
                 const faqInstance = faqModel({
-                    id: faqs[faqs.length - 1].id + 1,
                     question: req.body.question,
                     answer: req.body.answer,
                 });
@@ -924,12 +940,19 @@ function add(server) {
     });
 
     server.post("/edit-faq", function (req, resp) {
-        faqModel.findOne({ id: req.body.id }).then(function (faq) {
+        faqModel.findOne({ _id: req.body.id }).then(function (faq) {
             faq.question = req.body.question;
             faq.answer = req.body.answer;
             faq.save().then(function (result) {
                 resp.redirect("/faq");
             });
+        });
+    });
+
+    server.post("/delete-faq", function (req, resp) {
+        faqModel.findOneAndDelete({ _id: req.body.id }).then(function (faq) {
+            console.log(`faq#${faq._id} has been deleted`);
+            resp.redirect("/faq");
         });
     });
 
@@ -946,22 +969,22 @@ function add(server) {
         const timeParts = time.split(' ');
         const specTime = timeParts[0].split(':');
         let datetime = new Date();
-        datetime.setFullYear(Number(dateParts[2]) + 2000, dateParts[0]-1, dateParts[1]);
+        datetime.setFullYear(Number(dateParts[2]) + 2000, dateParts[0] - 1, dateParts[1]);
         datetime.setHours(specTime[0], specTime[1], 0, 0);
 
         console.log(datetime);
 
         const currentDate = new Date();
-        const datetime_requested= currentDate.toISOString();
-        
+        const datetime_requested = currentDate.toISOString();
+
         console.log(datetime_requested);
-        
+
         console.log(req.session.account_name);
 
         const seatsArray = seats.split(',').map(seat => parseInt(seat.trim().replace(/\D/g, ''), 10));
 
         console.log(seatsArray);
-        
+
         let isAnonymous = false;
         if (anon === "Yes") {
             isAnonymous = true;
@@ -980,6 +1003,54 @@ function add(server) {
         resp.redirect("/reservation");
     });
 
+    server.get("/confirm-reservation-tech", function (req, resp) {
+        let lab = req.query.lab;
+        let date = req.query.date;
+        let time = req.query.time;
+        let seats = req.query.seats;
+        let anon = req.query.anon;
+        let name = convertToUsername(req.query.name);
+
+        console.log(name);
+        console.log(req.session.account_name);
+        console.log(lab);
+
+        const dateParts = date.split('/');
+        const timeParts = time.split(' ');
+        const specTime = timeParts[0].split(':');
+        let datetime = new Date();
+        datetime.setFullYear(Number(dateParts[2]) + 2000, dateParts[0] - 1, dateParts[1]);
+        datetime.setHours(specTime[0], specTime[1], 0, 0);
+
+        console.log(datetime);
+
+        const currentDate = new Date();
+        const datetime_requested = currentDate.toISOString();
+
+        console.log(datetime_requested);
+
+        const seatsArray = seats.split(',').map(seat => parseInt(seat.trim().replace(/\D/g, ''), 10));
+
+        console.log(seatsArray);
+
+        let isAnonymous = false;
+        if (anon === "Yes") {
+            isAnonymous = true;
+        }
+        console.log(isAnonymous);
+
+        const reservationInstance = reservationModel({
+            lab: lab,
+            datetime: datetime,
+            datetime_requested: datetime_requested,
+            name: name,
+            seats: seatsArray,
+            isAnonymous: isAnonymous
+        });
+        reservationInstance.save();
+        resp.redirect("./add-reservation/" + name);
+    });
+
     server.post("/edit-reservation", function (req, resp) {
         resp.redirect("/reservation");
     });
@@ -989,7 +1060,37 @@ function add(server) {
         let date = req.query.date;
         let time = req.query.time;
         let user = req.session.account_name;
-        let name = req.query.name;
+
+        console.log(user);
+        console.log(lab);
+
+        const numDate = new Date(date);
+        const month = numDate.getMonth(); // Adding 1 because months are zero-indexed
+        const day = numDate.getDate();
+        const year = numDate.getFullYear();
+        const timeParts = time.split(' ');
+        const specTime = timeParts[0].split(':');
+        let datetime = new Date();
+        datetime.setFullYear(year, month, day);
+        datetime.setHours(specTime[0], specTime[1], 0, 0);
+
+        console.log(datetime);
+
+        reservationModel.deleteMany({ name: user, lab: lab, datetime: datetime }).then(function (reservation) {
+            console.log(`${reservation.deletedCount} documents deleted`);
+        });
+
+        resp.redirect("/reservation");
+    });
+
+    server.get("/delete-reservation-tech", function (req, resp) {
+        let lab = req.query.lab;
+        let date = req.query.date;
+        let time = req.query.time;
+        let user = req.session.account_name;
+        let name = convertToUsername(req.query.name);
+
+        console.log(user);
         console.log(name);
         console.log(lab);
 
@@ -1004,41 +1105,33 @@ function add(server) {
         datetime.setHours(specTime[0], specTime[1], 0, 0);
 
         console.log(datetime);
-        console.log(user);
 
-        reservationModel.deleteMany({ name: user, lab: lab, datetime: datetime }).then(function (reservation) {
+        reservationModel.deleteMany({ name: name, lab: lab, datetime: datetime }).then(function (reservation) {
             console.log(`${reservation.deletedCount} documents deleted`);
         });
 
-        resp.redirect("/reservation");
+        resp.redirect("./edit-reservation/" + name);
     });
 
-    server.get("/delete-reservation-tech", function (req, resp) {
-        let lab = req.query.lab;
-        let date = req.query.date;
-        let time = req.query.time;
-        let user = req.session.account_name;
-        
-        console.log(lab);
-
-        const numDate = new Date(date);
-        const month = numDate.getMonth(); // Adding 1 because months are zero-indexed
-        const day = numDate.getDate();
-        const year = numDate.getFullYear();
-        const timeParts = time.split(' ');
-        const specTime = timeParts[0].split(':');
-        let datetime = new Date();
-        datetime.setFullYear(year, month, day);
-        datetime.setHours(specTime[0], specTime[1], 0, 0);
-
-        console.log(datetime);
-        console.log(user);
-
-        reservationModel.deleteMany({ name: user, lab: lab, datetime: datetime }).then(function (reservation) {
-            console.log(`${reservation.deletedCount} documents deleted`);
-        });
-
-        resp.redirect("/reservation");
+    server.get("/about", function (req, resp) {
+        if (req.session.account_id == undefined) {
+            resp.redirect("/login");
+            return;
+        }
+        if (req.session.account_isTech) {
+            resp.render("about", {
+                layout: "index",
+                title: "About Us",
+                isAbout: true,
+                isTech: true,
+            });
+        } else {
+            resp.render("about", {
+                layout: "index",
+                title: "About Us",
+                isAbout: true,
+            });
+        }
     });
 }
 

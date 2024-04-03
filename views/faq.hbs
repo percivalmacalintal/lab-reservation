@@ -13,18 +13,21 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#q{{id}}">
+                        data-bs-target="#q{{increment @index}}">
                         {{question}}
                     </button>
                 </h2>
-                <div id="q{{id}}" class="accordion-collapse collapse" data-bs-parent="#question">
+                <div id="q{{increment @index}}" class="accordion-collapse collapse" data-bs-parent="#question">
                     <div class="accordion-body">
                         {{answer}}
                         {{#if ../isTech}}
-                        <br /><br />
-                        <div class="d-flex justify-content-center">
-                            <a class="btn btn-success" href="../faq" role="button" data-bs-toggle="modal"
-                                data-bs-target="#faq-{{increment @index}}">Edit</a>
+                        <div class="d-flex justify-content-center mt-2">
+                            <form action="../delete-faq" method="post">
+                                <input type="hidden" name="id" value="{{_id}}">
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#faq-{{increment @index}}">Edit</button>    
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
                         </div>
                         {{/if}}
                     </div>
@@ -34,7 +37,8 @@
         </div>
         {{#if isTech}}
         {{#each faq}}
-        <div class="modal fade" id="faq-{{increment @index}}" data-bs-backdrop="static" data-bs-keyboard="true" tabindex="-1">
+        <div class="modal fade" id="faq-{{increment @index}}" data-bs-backdrop="static" data-bs-keyboard="true"
+            tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -43,10 +47,11 @@
                     </div>
                     <form action="../edit-faq" method="post">
                         <div class="modal-body">
-                            <input type="hidden" name="id" value="{{increment @index}}">
+                            <input type="hidden" name="id" value="{{_id}}">
                             <div class="mb-3">
                                 <label for="question" class="form-label">Question</label>
-                                <input type="text" class="form-control" id="question" name="question" value="{{question}}">
+                                <input type="text" class="form-control" id="question" name="question"
+                                    value="{{question}}">
                             </div>
                             <div class="mb-3">
                                 <label for="answer" class="form-label">Answer</label>
@@ -73,7 +78,7 @@
                         <h1 class="modal-title fs-5">Add FAQ</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <form action="../add-faq" method="post">
+                    <form action="../create-faq" method="post">
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="question" class="form-label">Question</label>
@@ -82,7 +87,7 @@
                             <div class="mb-3">
                                 <label for="answer" class="form-label">Answer</label>
                                 <textarea class="form-control" id="answer" name="answer" required></textarea>
-                            </div>                            
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-success">Add</button>

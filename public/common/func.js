@@ -131,25 +131,34 @@ function resetReservation() {
         .not(".user_chair, .anon_chair, .reserved_chair")
         .css("background-color", "#2E8B57");
     $(".reserved_chair").css("background-color", "#DAA520");
-    $(".edit_btn").prop("disabled", false).text("Edit").click(function () {
-        editReservation();
-    });
+    $(".edit_btn").text("Edit");
+    $(".save_btn").hide().prop("disabled", true);
+    $(".anon_checkbox_res").hide();
+    $(".anon_checkbox").prop("checked", false);
+    $("img.chair[id$='-reserved']:not(.user_chair):not(.anon_chair)")
+        .click(function () {
+            selectSeat(this.id);
+        });
 }
 
 function editReservation() {
     var chairId = $(".chair").not(".user_chair, .anon_chair").first().attr("id");
     var idParts = chairId.split('-');
     var slotNum = idParts[1];
-
-    $(".chair")
-        .not(".user_chair, .anon_chair")
+    $("img.chair[id$='-reserved']:not(.user_chair):not(.anon_chair)")
         .click(function () {
             selectSeat(this.id);
         });
+
     if ($("#edit_reservation-" + slotNum).text() === "Edit") {
-        $("#edit_reservation-" + slotNum).text("Save");
+        $("#edit_reservation-" + slotNum).text("Cancel");
+        $(".save_btn").show();
+        $(".anon_checkbox_res").show();
     } else {
         $("#edit_reservation-" + slotNum).text("Edit");
+        $(".save_btn").hide();
+        $(".anon_checkbox_res").hide();
+        resetReservation();
     }
 }
 
@@ -169,41 +178,44 @@ function editProfile(url) {
     }
 }
 
-function deleteReservation(lab, time, date, name){
-    window.location.href = `/delete-reservation?lab=${lab}&date=${date}&time=${time}&name=${name}`;
+function deleteReservation(lab, time, date) {
+    window.location.href = `/delete-reservation?lab=${lab}&date=${date}&time=${time}`;
+}
+function deleteReservationTech(lab, time, date, name) {
+    window.location.href = `/delete-reservation-tech?lab=${lab}&date=${date}&time=${time}&name=${name}`;
 }
 
-function reserve() {
-    var slotNum = null;
-    $(".chair").each(function () {
-        var backgroundColor = $(this).css("background-color");
-        if (backgroundColor === "rgb(218, 165, 32)") {
-            var id = $(this).attr("id");
+function deleteFAQ(id) {
+    window.location.href = `/delete-faq?id=${id}`;
+}
 
-            if (slotNum === null) {
-                var middleMatch = id.match(/-([0-9]+)-\d+$/);
-                if (middleMatch && middleMatch.length >= 2) {
-                    slotNum = middleMatch[1];
-                    $("#seats-" + slotNum).text("");
-                }
-            }
-
-            var lastMatch = id.match(/-(\d+)$/);
-            if (lastMatch) {
-                var lastNumber = lastMatch[1];
-                $("#seats-" + slotNum).append("S" + lastNumber + ", ");
-            }
+function reserve(slotNum) {
+    $("#seats-" + slotNum).text("");
+    $("#seats-" + slotNum + "-reserved").text("");
+    for(var i = 1; i <= 45; i++) {
+        if ($("#chair-" + slotNum + "-" + i).css("background-color") === "rgb(218, 165, 32)") {
+            $("#seats-" + slotNum).append("S" + i + ", ");
         }
-    });
+        if ($("#chair-" + slotNum + "-" + i + "-reserved").css("background-color") === "rgb(218, 165, 32)") {
+            $("#seats-" + slotNum + "-reserved").append("S" + i + ", ");
+        }
+    }
     $("#seats-" + slotNum).text(
         $("#seats-" + slotNum)
             .text()
             .slice(0, -2)
     );
-    if (document.getElementById("anonymous" + slotNum).checked) {
+    $("#seats-" + slotNum + "-reserved").text(
+        $("#seats-" + slotNum + "-reserved")
+            .text()
+            .slice(0, -2)
+    );
+    if (document.getElementById("anonymous" + slotNum).checked || document.getElementById("anonymous" + slotNum + "-reserved").checked) {
         $("#anon-" + slotNum).text("Yes");
+        $("#anon-" + slotNum + "-reserved").text("Yes");
     } else {
         $("#anon-" + slotNum).text("No");
+        $("#anon-" + slotNum + "-reserved").text("No");
     }
 }
 
@@ -217,14 +229,14 @@ function confirmReservation(slotIndex) {
     window.location.href = `/confirm-reservation?lab=${lab}&date=${date}&time=${time}&seats=${seats}&anon=${anon}`;
 }
 
-function confirmReservationTech(slotIndex) {
+function confirmReservationTech(slotIndex, name) {
     let lab = document.getElementById(`lab-${slotIndex}`).innerText;
     let date = document.getElementById(`date-${slotIndex}`).innerText;
     let time = document.getElementById(`time-${slotIndex}`).innerText;
     let seats = document.getElementById(`seats-${slotIndex}`).innerText;
     let anon = document.getElementById(`anon-${slotIndex}`).innerText;
 
-    window.location.href = `/confirm-reservation-tech?lab=${lab}date=${date}&time=${time}&seats=${seats}&anon=${anon}`;
+    window.location.href = `/confirm-reservation-tech?lab=${lab}&date=${date}&time=${time}&seats=${seats}&anon=${anon}&name=${name}`;
 }
 
 function selectSeat(chair) {
@@ -234,56 +246,43 @@ function selectSeat(chair) {
     var slotNum = null;
     var idParts = chair.split("-");
     slotNum = idParts[1];
-    var foundYellowChair = false;
-    var foundYellowChair_res = false;
+    var enable = false;
+    var enable_res = false;
+    var foundYellow_res = false;
 
     if (currentColor === "rgb(46, 139, 87)") {
         element.style.backgroundColor = "#DAA520";
-        $("#confirm_button-" + slotNum).prop("disabled", false);
-        $("#edit_reservation-" + slotNum).prop("disabled", false);
     } else if (currentColor === "rgb(218, 165, 32)") {
         element.style.backgroundColor = "#2E8B57";
-        for (var i = 1; i <= 45; i++) {
-            var chairId = "#chair-" + slotNum + "-" + i;
-            var chairColor = $(chairId).css("background-color");
-            var chairId_res = "#chair-" + slotNum + "-" + i + "-reserved";
-            var chairColor_res = $(chairId_res).css("background-color");
+    }
+    for (var i = 1; i <= 45; i++) {
+        var chairId = "#chair-" + slotNum + "-" + i;
+        var chairColor = $(chairId).css("background-color");
+        var chairId_res = "#chair-" + slotNum + "-" + i + "-reserved";
+        var chairColor_res = $(chairId_res).css("background-color");
+        var isRes = $(chairId_res).hasClass("reserved_chair");
+        var isAnon = $(chairId_res).hasClass("anon_chair");
+        var isUser = $(chairId_res).hasClass("user_chair");
 
-            if (chairColor === "rgb(218, 165, 32)") {
-                foundYellowChair = true;
-            }
-            if (chairColor_res === "rgb(218, 165, 32)") {
-                foundYellowChair_res = true;
-            }
+        if (chairColor === "rgb(218, 165, 32)") {
+            enable = true;
         }
-        if (foundYellowChair === false) {
-            $("#confirm_button-" + slotNum).prop("disabled", true);
+        if (chairColor_res === "rgb(218, 165, 32)") {
+            foundYellow_res = true;
         }
-        if (foundYellowChair_res === false) {
-            $("#edit_reservation-" + slotNum).prop("disabled", true);
+        if ((isRes && chairColor_res === "rgb(46, 139, 87)") || (!isRes && !isAnon && !isUser && chairColor_res === "rgb(218, 165, 32)")) {
+            enable_res = true;
         }
     }
-
-    if (!/\b(user_chair|anon_chair|reserved_chair)\b/.test(chairClass)) {
-        if (currentColor === "rgb(218, 165, 32)") {
-            $("#edit_reservation-" + slotNum).click(function () {
-                window.location.href = "/confirm-reservation";
-            });
-        } else {
-            $("#edit_reservation-" + slotNum).click(function () {
-                editReservation();
-            });
-        }
-    } else if (/\breserved_chair\b/.test(chairClass)) {
-        if (currentColor === "rgb(46, 139, 87)") {
-            $("#edit_reservation-" + slotNum).click(function () {
-                window.location.href = "/confirm-reservation";
-            });
-        } else {
-            $("#edit_reservation-" + slotNum).click(function () {
-                editReservation();
-            });
-        }
+    if (enable) {
+        $("#confirm_button-" + slotNum).prop("disabled", false);
+    } else {
+        $("#confirm_button-" + slotNum).prop("disabled", true);
+    }
+    if (enable_res && foundYellow_res) {
+        $("#confirm_button-" + slotNum + "-reserved").prop("disabled", false);
+    } else {
+        $("#confirm_button-" + slotNum + "-reserved").prop("disabled", true);
     }
 }
 
@@ -312,6 +311,8 @@ function searchSlots(date, time, lab, name, isTech) {
         function (data, status) {
             let slots = data.slots;
             let isReserved = data.isReserved;
+            let name = data.name;
+            alert(name);
             if (status === "success") {
                 if (isReserved) {
                     alert("Currently have a reservation at the chosen time slot.");
@@ -640,10 +641,10 @@ function searchSlots(date, time, lab, name, isTech) {
                             <div class="modal-footer">`;
                     if (isTech) {
                         slot += `
-                        <a class="btn btn-success" href="#" onclick="confirmReservationTech(`+ i +`)" role="button">Confirm</a>`;
+                        <a class="btn btn-success" href="#" onclick="confirmReservationTech(`+ i + `, '` + name + `')" role="button">Confirm</a>`;
                     } else {
                         slot += `
-                        <a class="btn btn-success" href="#" onclick="confirmReservation(`+ i +`)" role="button">Confirm</a>`;
+                        <a class="btn btn-success" href="#" onclick="confirmReservation(`+ i + `)" role="button">Confirm</a>`;
                     }
                     slot += `
                             </div>
